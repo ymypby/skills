@@ -1,6 +1,6 @@
 ---
 name: tech-doc-md-optimizer
-description: Optimizes existing Chinese technical markdown documents to follow a standard "技术文档.md" template. Use when improving, rewriting, or standardizing markdown 技术文档 documents, especially when the user mentions "技术文档模版.md" or asks to align docs to that template.
+description: Optimizes existing Chinese technical markdown documents to follow a standard "技术文档.md" template. Use when improving, rewriting, or standardizing markdown technology documents, especially when the user mentions "技术文档.md" or asks to align docs to that template.
 ---
 
 # Technical Documentation Template Optimization (Markdown)
@@ -35,7 +35,7 @@ Use this skill in these situations:
    - You must NOT invent new features, APIs, constraints, version history records, metrics, or other technical facts
 
 2. **Template alignment first, content polish second**
-   - First, align the document’s structure to the `技术文档.md` template (see template section below)
+   - First, align the document’s structure to the `技术文档.md` template in `references/技术文档.md`
    - Then, improve clarity, readability, and consistency inside that structure
 
 3. **Terminology consistency**
@@ -57,7 +57,7 @@ Use this skill in these situations:
 1. Read the reference template file:
    - Path: `references/技术文档.md`
    - Treat it as the default shape of the technical document
-   - Pay attention to **section order**, **English comments in `<!-- COMMENT: ... -->`**, and **Chinese example content**
+   - Pay attention to **section order**, in-line comments in `<!-- COMMENT: ... -->`, and the concrete Chinese example content（例如通知组件、数据库 DDL、参考链接等）
 2. Read the user’s source markdown technical document
    - Identify existing information about:
      - Version history / change log
@@ -73,40 +73,39 @@ Use this skill in these situations:
 In the output document, ensure at least the following **top-level sections** appear in this order (you may add more later if needed).  
 The section names should follow the Chinese headings defined in `references/技术文档.md`:
 
-1. `# [系统名称] 技术文档`（或类似标题）
 2. `## 版本说明`
 3. `## 功能描述`
+4. `## 使用说明`
+5. `## 参考`
 
-After that, you may include other sections from the reference template that match the source content, such as:
+Within `## 使用说明`，常见的二级小节包括但不限于：
 
-- `## Context and Background`
-- `## Architecture`
-- `## API Design`
-- `## Data Model`
-- `## Workflow`
-- `## Configuration and Deployment`
-- `## Non-Functional Requirements`
-- `## Risks and Open Questions`
+- `### 一、前置条件`
+  - `#### 1、依赖引入`
+  - `#### 2、数据库`
+  - `#### 3、其他前置条件`
+- `### 二、功能介绍`
+  - 针对各个主要功能点（如“日志脱敏”、“通知发送”等）说明额外配置、使用步骤以及示例代码
 
 For each section:
 
 - Map relevant content from the source document into the most appropriate section
 - If a section in the template has **no corresponding information** in the source:
   - Leave it out, OR
-  - Keep the section heading with a short placeholder note (e.g. “TBD”) **without inventing details**
+  - Keep the section heading with a short placeholder note（例如“待补充”）**without inventing details**
 
 ### Step 3: Build a proper version history table
 
 Under `## 版本说明`:
 
-- Use a **markdown table** consistent with the template in `references/技术文档.md`, typically with four columns:
+- Use a **markdown table** consistent with the template in `references/技术文档.md`，with the following columns:
   - `发布日期`、`修改人`、`版本号`、`修改内容`
 - Extract any available version/change information from the source document and map it into table rows
 - If the source has **no clear version info**:
   - Do NOT fabricate real-looking version records
   - You may:
     - Keep the table header with no data rows, OR
-    - Add a single placeholder row with clearly non-final values (e.g. `TBD`)
+    - Add a single placeholder row with clearly non-final values（例如在“修改内容”中填写“待补充”）
 
 ### Step 4: Rewrite and structure the content
 
@@ -137,9 +136,10 @@ Before finalizing:
 The final output should:
 
 - Be a **single markdown document** with:
-  - A clear Chinese title following the template (for example `# [系统名称] 技术文档`)
   - A `## 版本说明` section that contains a correctly formatted version history table
   - A `## 功能描述` section summarizing what the system/module does
+  - A `## 使用说明` section explaining how to configure and use the component/system（包含前置条件与功能介绍等常见小节）
+  - A `## 参考` section listing diagrams, internal wiki links, and external docs if such information exists in the source
 - Contain **no** explanatory text about the transformation or your reasoning
 - Be ready to paste directly into a `.md` file
 
@@ -147,7 +147,7 @@ The final output should:
 
 When using this skill, ensure:
 
-1. **Structure aligned**: The document follows the `references/技术文档.md` template with at least `## 版本说明` and `## 功能描述`.
+1. **Structure aligned**: The document follows the `references/技术文档.md` template with at least `## 版本说明`、`## 功能描述`、`## 使用说明` 和（如有内容）`## 参考`。
 2. **Content faithful**: No fabricated features, parameters, or version records; all important technical details from the source are preserved.
 3. **Ready to use**: The final markdown output can be pasted directly into the target `.md` file and used as the official technical document.
 
