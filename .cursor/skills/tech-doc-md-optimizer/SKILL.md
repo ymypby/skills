@@ -31,7 +31,7 @@ Use this skill in these situations:
 ## Core Principles
 
 1. **No invented facts**
-   - You may rewrite sentences, rearrange sections, and delete meaningless filler
+   - You may rewrite sentences, rearrange sections, adjust the original document’s structure and sentence order based on the concrete context, and delete meaningless filler
    - You must NOT invent new features, APIs, constraints, version history records, metrics, or other technical facts
 
 2. **Template alignment first, content polish second**
@@ -70,29 +70,17 @@ Use this skill in these situations:
 
 ### Step 2: Align the top-level structure
 
-In the output document, ensure at least the following **top-level sections** appear in this order (you may add more later if needed).  
-The section names should follow the Chinese headings defined in `references/技术文档.md`:
+In the output document, align the **overall structure and section naming** strictly with the `references/技术文档.md` template:
 
-2. `## 版本说明`
-3. `## 功能描述`
-4. `## 使用说明`
-5. `## 参考`
-
-Within `## 使用说明`，常见的二级小节包括但不限于：
-
-- `### 一、前置条件`
-  - `#### 1、依赖引入`
-  - `#### 2、数据库`
-  - `#### 3、其他前置条件`
-- `### 二、功能介绍`
-  - 针对各个主要功能点（如“日志脱敏”、“通知发送”等）说明额外配置、使用步骤以及示例代码
+- Follow the same top-level sections（如 `## 版本说明`、`## 功能描述`、`## 使用说明`、`## 参考` 等）的命名和顺序
+- 对于 `## 使用说明` 下的二级/三级小节结构、每个小节应承载的内容、以及“二、功能介绍”中每个小点必须是完整功能点等约束，**以模板文件中的注释（`<!-- COMMENT: ... -->`）和示例内容为准**
 
 For each section:
 
-- Map relevant content from the source document into the most appropriate section
+- Map relevant content from the source document into the most appropriate section according to the comments and examples in `references/技术文档.md`
 - If a section in the template has **no corresponding information** in the source:
   - Leave it out, OR
-  - Keep the section heading with a short placeholder note（例如“待补充”）**without inventing details**
+  - Keep the section heading with a short placeholder note（例如“待补充”）**without inventing details**, following the intent indicated by the template comments
 
 ### Step 3: Build a proper version history table
 
@@ -127,9 +115,15 @@ Before finalizing:
 
 - Verify that all meaningful technical content from the source document is preserved
 - Do not change numeric values, thresholds, time windows, quotas, or other precise parameters
-- If something in the source is ambiguous:
-  - Use a neutral, safe phrasing
-  - Avoid adding new assumptions
+- If something in the source is ambiguous or you do not fully understand it:
+  - Do NOT guess or silently rewrite the content
+  - Ask the user targeted clarification questions in Chinese before finalizing the document
+  - When asking questions, follow a standardized pattern so the user can reply efficiently, for example:
+    - 引用原文的关键语句或段落（使用引用块或内联引号），说明“不够清晰/存在多种理解方式”
+    - 按列表给出 2–3 个你认为可能的理解方式，请用户在其中选择或补充
+    - 明确告诉用户，你会在拿到答复后再更新对应的小节内容
+  - 示例提问模版（可根据实际情况微调）：
+    - “在当前技术文档中，关于『XXX』的描述不够清晰，可能存在多种理解方式。请确认该段的准确含义：1）……；2）……；或补充更详细的业务背景，我会据此完善文档。”
 
 ### Step 6: Produce the final markdown document
 
