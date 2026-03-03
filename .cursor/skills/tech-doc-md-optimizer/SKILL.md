@@ -70,17 +70,18 @@ Use this skill in these situations:
 
 ### Step 2: Align the top-level structure
 
-In the output document, align the **overall structure and section naming** strictly with the `references/技术文档.md` template:
+In the output document, the **structure must be fully aligned to the `references/技术文档.md` template and MUST NOT be modified**:
 
-- Follow the same top-level sections（如 `## 版本说明`、`## 功能描述`、`## 使用说明`、`## 参考` 等）的命名和顺序
-- 对于 `## 使用说明` 下的二级/三级小节结构、每个小节应承载的内容、以及“二、功能介绍”中每个小点必须是完整功能点等约束，**以模板文件中的注释（`<!-- COMMENT: ... -->`）和示例内容为准**
+- Use **exactly the same set of headings（标题文案 + 层级）和顺序** as in `references/技术文档.md`
+- Do **NOT** add, remove, rename, merge, split, or reorder any of the template’s sections（包括顶层章节与示例中的常见小节）
+- 对于 `## 使用说明` 下的二级/三级小节结构、每个小节应承载的内容、以及“二、功能介绍”中每个小点必须是完整功能点等约束，**严格以模板文件中的注释（`<!-- COMMENT: ... -->`）和示例内容为准**
 
 For each section:
 
 - Map relevant content from the source document into the most appropriate section according to the comments and examples in `references/技术文档.md`
 - If a section in the template has **no corresponding information** in the source:
-  - Leave it out, OR
-  - Keep the section heading with a short placeholder note（例如“待补充”）**without inventing details**, following the intent indicated by the template comments
+  - **仍然保留该章节标题**，并使用一个明确的占位说明（例如“待补充”或类似语句），但不要虚构具体内容
+  - 占位说明的写法应与模板注释中表达的“待补充/暂无内容”等意图保持一致
 
 ### Step 3: Build a proper version history table
 
@@ -104,6 +105,9 @@ While keeping all true technical information:
 - **Use lists and tables**
   - Convert long enumerations into bullet lists
   - Use tables for structured data (parameters, configuration, status codes, etc.)
+- **Use visual representations when helpful**
+  - Where appropriate, you may introduce diagrams or flow representations（例如顺序图、流程图、状态图，推荐使用 markdown/mermaid 语法）to clarify processes or interactions
+  - Any table or diagram must strictly reflect facts already present or implied in the source document; do NOT invent new steps, branches, or states
 - **Improve clarity**
   - Remove empty phrases (“this section briefly introduces…”)
   - Split very long sentences into shorter, clearer ones
