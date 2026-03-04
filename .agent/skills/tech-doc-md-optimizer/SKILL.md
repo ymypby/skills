@@ -26,7 +26,7 @@ Rewrite an **existing Chinese technical markdown document** into the standard st
 
 ## Maintenance
 
-- Keep this `SKILL.md` in English; use Chinese only for literal examples/quoted text.
+- Keep this `SKILL.md` And comments in `references/技术文档.md`in English; use Chinese only for literal examples/quoted text.
 - Put detailed section rules in `references/技术文档.md` comments, not here.
 
 ## Workflow
