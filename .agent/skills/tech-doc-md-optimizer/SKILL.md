@@ -21,21 +21,43 @@ Rewrite an **existing Chinese technical markdown document** into the standard st
 - **Preserve meaning & terms**: keep original names for modules/APIs/fields/envs; only normalize if the source is clearly inconsistent.
 - **Keep language**: do not translate unless explicitly asked.
 - **Readable Chinese**: write in plain, concise Chinese for junior-to-mid engineers (unless the source language differs).
-- **Follow the template**: detailed “what each section contains” rules come from `references/技术文档.md` comments (`<!-- COMMENT: ... -->`), not from this file.
+- **Follow the template**: detailed "what each section contains" rules come from `references/技术文档.md` comments (`<!-- COMMENT: ... -->`), not from this file.
 - **Final output only**: no analysis or meta text; avoid duplicated content; keep precise numbers unchanged.
 - **Source code priority**: When user provides source code directory, trust source code over documentation when there are discrepancies.
+- **Human-first clarification**: When encountering ambiguous, unclear, or conflicting concepts/terms/logic, proactively ask the user for clarification before proceeding. Examples:
+  - Same concept/term described inconsistently across chapters (e.g., "Concept X in Chapter 1 vs Chapter 2")
+  - Conflicting logic or flow descriptions
+  - Configuration/parameter defined differently in multiple places
+  - Technical facts that are vague or cannot be inferred from context
+  - Ask specific questions like: "xx 概念在章节 1 中说的是 A，在章节 2 中说的是 B，请明确该概念的定义？"
 
-## Source Code Integration (When User Provides Source Directory)
+## Source Code Integration (When User Provides Source Directory or Markdown Archive)
 
-This skill supports optional source code analysis when the user provides a source code directory. The source code integration is conditional:
+This skill supports optional source code analysis when the user provides a source code directory or a markdown file containing archived source code. The source code integration is conditional:
 
 **If user provides source code directory:**
 - Execute source code analysis phase (Phase 2.5)
 - Read relevant source files to understand unclear code
 - Trust source code over documentation when there are discrepancies
 - Discover additional features from source code and add to appropriate sections
+- **Supplement code examples**: When the source document describes code processing logic or implementation approaches but lacks concrete code examples, proactively read source files to find and add corresponding code snippets. Code examples take priority over text descriptions for clarity.
 
-**If user does NOT provide source code directory:**
+**If user provides a markdown file containing archived source code (e.g., Repomix output):**
+- Detect Repomix markdown archive format and similar tools:
+  - Repomix header: File starts with `# Repomix Output` or similar tool headers
+  - Repomix file markers: `## File: path/to/file.ext` followed by code block
+  - Generic markers: "代码文件为 xx.md" / "文件：xx.md" / "File: xx.md"
+  - Code blocks preceded by file path comments (e.g., `// src/main/java/xxx/Config.java`)
+  - Markdown headers indicating file paths (e.g., `### src/main/java/xxx/Config.java`)
+- Parse and extract individual file contents from the markdown archive:
+  - For Repomix format: Extract file path from `## File:` headers, extract code from following code block
+  - For generic format: Extract file path from markers, extract code from following code block
+- Build an in-memory file structure representation for analysis:
+  - Map file paths to code contents
+  - Preserve directory structure information for context
+- Execute source code analysis phase (Phase 2.5) using the extracted file structure
+
+**If user does NOT provide source code directory or markdown archive:**
 - Skip source code analysis phase entirely
 - Proceed with document optimization based solely on the source document
 
@@ -98,9 +120,31 @@ This skill supports optional source code analysis when the user provides a sourc
 
 ### Phase 2.5: Source Code Analysis (Conditional)
 
-**This phase is ONLY executed when the user provides a source code directory. If no source code directory is provided, skip this phase and proceed with Phase 3.**
+**This phase is ONLY executed when the user provides a source code directory OR a markdown file containing archived source code. If no source code is provided, skip this phase and proceed with Phase 3.**
 
-3. **Scan and analyze source code** (when source directory is provided):
+3. **Detect source code provision method**:
+   - **Directory mode**: User provides a source code directory path
+   - **Markdown archive mode** (e.g., Repomix output): User provides a markdown file containing embedded source code with file path markers:
+     - **Repomix format**:
+       - Header: `# Repomix Output` or similar at file start
+       - File markers: `## File: path/to/file.ext` followed by code block
+     - **Generic format**:
+       - Explicit markers: "代码文件为 xx.md" / "文件：xx.md" / "File: xx.md"
+       - Code blocks with file path comments (e.g., `// src/main/java/xxx/Config.java`)
+       - Markdown headers indicating file paths (e.g., `### src/main/java/xxx/Config.java`)
+   - **If markdown archive mode detected**: 
+     - Parse and extract individual file contents
+     - For Repomix: Extract file path from `## File:` headers, code from following code block
+     - For generic: Extract file path from markers, code from following code block
+     - Build in-memory file structure mapping file paths to code contents
+     - Preserve directory structure information for context understanding
+
+4. **Scan and analyze source code** (when source directory or markdown archive is provided):
+   - **Exclude non-source directories/files** (directory mode only): Skip the following as they contain test code, build artifacts, or other non-source files:
+     - `test/`, `tests/`, `*test*/` (test code directories)
+     - `target/`, `build/`, `dist/`, `out/`, `bin/` (build output directories)
+     - `.git/`, `.idea/`, `.vscode/` (IDE/tool configuration directories)
+     - `node_modules/`, `vendor/` (dependency directories)
    - Identify key code files:
      - Configuration classes (e.g., `*Config.java`, `*Properties.java`)
      - API controllers (e.g., `*Controller.java`, `*Api.java`)
@@ -117,6 +161,13 @@ This skill supports optional source code analysis when the user provides a sourc
      - Note any features in code but not in documentation
      - Note any configuration differences
    - Discover additional features/scenarios not mentioned in the source document
+   - **Supplement code examples for text descriptions**:
+     - Identify code-related descriptions in the source document that lack concrete code examples (e.g., "通过配置类初始化"、"使用注解启用功能"、"调用 XX 方法处理")
+     - Search source code for matching implementations based on keywords, class names, method names, or logic descriptions
+     - Extract relevant code snippets (classes, methods, annotations, configurations)
+     - Add extracted code as properly-formatted code blocks with appropriate language hints (java, python, javascript, etc.)
+     - Place code examples adjacent to or replacing the text descriptions for better clarity
+     - Prefer code examples over lengthy text descriptions when both are available
 
 ### Phase 3: Content Mapping
 
@@ -185,10 +236,19 @@ This skill supports optional source code analysis when the user provides a sourc
 
 ### Phase 6: Validation
 
-8. **If ambiguity blocks correctness**:
-   - Quote the unclear sentence from source
-   - List 2-3 possible interpretations
-   - Ask user to confirm or correct before finalizing
+8. **Proactive clarification for ambiguities** (Human-first principle):
+   - When encountering any of the following scenarios, STOP and ask the user for clarification before proceeding:
+     - **Inconsistent concept/term definitions**: Same concept/term described differently across chapters (e.g., "X 概念在章节 1 中定义为 A，在章节 2 中定义为 B，请明确该概念的正确定义？")
+     - **Conflicting logic or flows**: Steps or logic that contradict each other in different parts of the document
+     - **Configuration/parameter conflicts**: Same configuration key or parameter defined with different values/types in multiple places
+     - **Vague technical facts**: Technical descriptions that are too vague to infer concrete implementation details
+     - **Missing critical information**: Key information required for correctness is absent and cannot be reasonably inferred
+   - **Question format**: When asking for clarification:
+     - Quote the specific unclear or conflicting content from the source document
+     - Point out the exact contradiction or ambiguity (e.g., "章节 1 说...，章节 2 说...")
+     - List 2-3 possible interpretations or resolutions
+     - Ask a specific question like: "xx 概念在章节 1 中说的是 A，在章节 2 中说的是 B，请明确该概念的定义？"
+     - Wait for user confirmation before finalizing the ambiguous content
 
 9. **Final validation checklist**:
    - Structure and headings match `references/技术文档.md`
