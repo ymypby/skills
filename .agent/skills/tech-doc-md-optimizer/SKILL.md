@@ -9,12 +9,14 @@ description: Optimizes existing Chinese technical markdown documents to follow t
 
 Transform an existing Chinese technical markdown document into the standard structure defined by `references/技术文档.md`, improving clarity and consistency while preserving all technical facts. Output is a single clean markdown document in the source language.
 
+**Critical Principle**: The output document must be **self-contained** - do NOT assume readers have access to source code. Every feature must include complete, copy-paste ready code and configuration examples.
+
 ## Core Principles
 
 1. **No invented facts** - Never fabricate features, APIs, constraints, metrics, or version records
 2. **Source code priority** - When user provides source code, trust it over documentation when there are discrepancies
 3. **Preserve meaning** - Keep original names for modules, APIs, fields, environments; only normalize if clearly inconsistent
-4. **Proactively supplement** - Always add configuration examples and code snippets when documenting features discovered from source code
+4. **Complete examples required** - ALWAYS provide complete, copy-paste ready code and configuration examples for every feature. Readers cannot access source code, so examples must be self-contained and usable.
 5. **Human-first clarification** - Ask the user when encountering ambiguous, unclear, or conflicting concepts before proceeding
 
 ## Workflow
@@ -69,11 +71,19 @@ Content boundaries:
 - Source already contains a flowchart (convert to mermaid)
 - Complex flow detected: 3+ sequential steps, 2+ systems interacting, conditional branches, loops/retries, state transitions
 
-**Supplement examples**:
-- Add configuration/code examples when describing features
-- Add usage examples when documenting APIs
-- Add implementation details for newly discovered features from source
-- Prefer code/configuration examples over lengthy text descriptions
+**Supplement examples** (CRITICAL - Readers cannot access source code):
+- **For EVERY feature in "功能特性" section, MUST include:**
+  1. **Configuration Example** - Complete config snippet in YAML/Properties/JSON format
+  2. **Code Example** - Usage code snippet showing how to use the feature
+  3. **API Example** (if applicable) - Request/Response format with concrete values
+- **When source code IS provided**: Extract real examples from code
+- **When source code is NOT provided**: Create reasonable examples based on:
+  - Common patterns and conventions for similar frameworks
+  - Standard API design practices (RESTful conventions)
+  - Descriptive placeholder names (not "xxx", use "userId", "orderNo", etc.)
+  - Add note if needed: "示例代码，需根据实际情况调整"
+- **NEVER use "待补充" for examples** - always provide a complete, usable example
+- Prefer complete, copy-paste ready examples over partial snippets
 
 ### Phase 4: Output
 
@@ -83,16 +93,53 @@ Content boundaries:
 - #### level: 4-space indent, format `    - [1、日志脱敏](#1 日志脱敏)`
 - Include all #### level feature items under both "前置条件" and "功能特性"
 
-**Final validation**:
+**Final validation** (CRITICAL - Check examples):
 - Structure matches `references/技术文档.md`
 - No fabricated facts or altered parameters
 - No duplicated content
-- Placeholders used where source info was missing
-- All code/config in proper fenced blocks
+- **EVERY feature has configuration example**
+- **EVERY feature has code usage example**
+- **EVERY API has request/response example**
+- All code/config in proper fenced blocks with language hints
 
 **Emit** the final markdown document:
 - Single clean markdown, no reasoning text or meta-commentary
 - TOC section included at the beginning with clickable anchor links
+
+## Example Requirements (Detailed)
+
+### Configuration Example Format
+```yaml
+# application.yml - Feature configuration
+feature:
+  enabled: true
+  setting: value
+  timeout: 30000
+```
+
+### Code Usage Example Format
+```java
+// Initialize and use the feature
+FeatureService service = new FeatureService();
+Result result = service.execute(param);
+```
+
+### API Example Format
+```
+POST /api/v1/feature/execute
+Content-Type: application/json
+
+{
+  "param1": "value1",
+  "param2": 123
+}
+
+Response:
+{
+  "code": 200,
+  "data": { "result": "success" }
+}
+```
 
 ## Handling Ambiguities
 
