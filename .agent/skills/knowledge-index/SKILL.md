@@ -19,11 +19,24 @@ Check if `knowledge-index-todotasks.md` exists in the target directory:
 
 ### Step 1: Get All Markdown File Paths
 
-Scan the specified directory recursively and collect all `.md` file paths into a list.
+**Use the shell script `scripts/scan-md-files.sh` to scan the target directory.**
 
+Execute the following command:
+```bash
+./scripts/scan-md-files.sh <target_directory>
+```
+
+The script will:
 1. Recursively scan the target directory
 2. Collect all paths ending with `.md`
-3. Store as a list for iteration
+3. Exclude `知识目录.md` and `knowledge-index-todotasks.md`
+4. Output sorted file paths (one per line)
+
+**Parse the script output and store as a list for iteration.**
+
+**CRITICAL: Only collect file paths in this step. DO NOT read any file contents yet.**
+
+**DO NOT read the content of any files in this step. File contents will only be read one at a time in Step 3.**
 
 ### Step 2: Create Todo Tasks File
 
@@ -37,28 +50,39 @@ See `references/todotasks-template.md` for the full template.
 
 ### Step 3: Process Each File in Loop
 
-For each pending file in the todo tasks list, perform the following steps:
+**CRITICAL: Tasks MUST be processed sequentially (one at a time), NOT in parallel.**
 
-1. Read the Markdown file content
-2. Identify the main subject:
-   - What concrete module/component does this file describe?
-   - Must be a physical entity, not an abstract concept
-3. Generate introduction:
-   - 50-100 Chinese characters
-   - Describe purpose and problems solved
-4. Identify dependencies:
-   - Extract from Markdown links: `[xxx](other-file.md)`
-   - Infer from content analysis
-5. Read existing `知识目录.md` (if exists)
-6. Update subject list section:
-   - Add new subject OR update existing entry
-7. Update dependency graph section:
-   - Add new dependency relationships
-8. Write back to `知识目录.md` immediately
-9. Mark task as completed:
-   - Move task from Pending to Completed section
-   - Change "- [ ]" to "- [x]"
-   - Write back to `knowledge-index-todotasks.md` immediately
+**You MUST complete one task fully (including writing back to both files) before starting the next task.**
+
+1. Read `knowledge-index-todotasks.md` file from the target directory
+2. Extract all pending tasks (lines with "- [ ]") from the Pending section
+3. **Process the FIRST pending task only**:
+   - Extract the file path from the first pending task line
+   - Read the Markdown file content
+   - Identify **ONE main subject only** from the file:
+     - What concrete module/component does this file describe?
+     - Must be a physical entity, not an abstract concept
+     - **Extract only ONE subject per file - do NOT extract multiple subjects from the same file**
+   - Generate introduction:
+     - 50-150 Chinese characters
+     - Describe purpose and problems solved
+   - Identify dependencies:
+     - Extract from Markdown links: `[xxx](other-file.md)`
+     - Infer from content analysis
+   - Read existing `知识目录.md` (if exists)
+   - Update subject list section:
+     - Add new subject OR update existing entry
+   - Update dependency graph section:
+     - Add new dependency relationships
+   - Write back to `知识目录.md` immediately
+   - Mark this task as completed:
+     - Move this task from Pending to Completed section
+     - Change "- [ ]" to "- [x]"
+     - Write back to `knowledge-index-todotasks.md` immediately
+4. **After completing one task**, re-read `knowledge-index-todotasks.md` and repeat step 3 for the next pending task
+5. **Continue this loop** until all pending tasks are completed
+
+**DO NOT batch process multiple tasks. DO NOT read multiple file contents before writing back. One task at a time.**
 
 ### Step 4: Final Validation
 
@@ -85,7 +109,7 @@ The "知识目录.md" must follow the template structure in `references/knowledg
 
 **Template structure (for reference only):**
 - `## 全局依赖图` - Mermaid graph showing dependencies between subjects (must include all subjects)
-- `## 主体列表` - List of subjects with 50-100 character introductions
+- `## 主体列表` - List of subjects with 50-150 character introductions
 
 See `references/knowledge-index-template.md` for the full template with comments and examples (for reference only, do not copy them to output).
 
@@ -108,13 +132,16 @@ When processing files, you may need to ask the user:
 ### Constraints
 
 1. **Subject requirement**: Subjects must be concrete physical entities documented in source files, not abstract concepts
-2. **Dependency depth**: Maximum 4 dependency levels in the mermaid graph
-3. **Introduction length**: 50-100 Chinese characters for each subject introduction
-4. **Incremental update**: Add new subjects, update existing ones, remove entries for deleted files
-5. **Dynamic updates**: Both subject list AND dependency graph are updated immediately after processing each file
-6. **Final output must NOT contain HTML comments**: Remove all `<!-- ... -->` comments from the output file
-7. **Global dependency graph must include ALL subjects**: Every subject in the 主体列表 section must appear in the dependency graph
-8. **Todo tasks file**: Must create and maintain `knowledge-index-todotasks.md` for tracking progress
+2. **Subject name requirement**: Subject names MUST exist in the original source documents - do NOT generate or create new subject names
+3. **Subject abstraction level**: All subjects in the final output must be at the same abstraction level. If subjects are at different levels, merge lower-level subjects into higher-level ones
+4. **One subject per file**: Each file should contribute exactly ONE subject only - do NOT extract multiple subjects from the same file
+5. **Dependency depth**: Maximum 4 dependency levels in the mermaid graph
+6. **Introduction length**: 50-150 Chinese characters for each subject introduction
+7. **Incremental update**: Add new subjects, update existing ones, remove entries for deleted files
+8. **Dynamic updates**: Both subject list AND dependency graph are updated immediately after processing each file
+9. **Final output must NOT contain HTML comments**: Remove all `<!-- ... -->` comments from the output file
+10. **Global dependency graph must include ALL subjects**: Every subject in the 主体列表 section must appear in the dependency graph
+11. **Todo tasks file**: Must create and maintain `knowledge-index-todotasks.md` for tracking progress
 
 ## Files to Create
 
