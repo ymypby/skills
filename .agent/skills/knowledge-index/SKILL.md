@@ -9,18 +9,30 @@ This skill scans Markdown files and generates/maintains a "知识目录.md" (Kno
 
 ## Workflow
 
-### Step 0: Check for Existing Todo Tasks File
+### Step 0: Check for Existing Todo Tasks File (REQUIRED FIRST STEP)
 
-Check if `knowledge-index-todotasks.md` exists in the target directory:
+**CRITICAL: This is the first step you MUST execute before any other step. Based on the result, branch accordingly:**
 
-- **If exists AND has pending tasks**: Continue processing from the first pending task (resume from breakpoint)
-- **If exists BUT all tasks completed**: Delete the existing file and start fresh from Step 1
-- **If does not exist**: Start fresh from Step 1
+1. Check if `knowledge-index-todotasks.md` exists in the target directory
+2. If it exists, read the file and check for pending tasks (lines with "- [ ]")
+
+**Branch based on status:**
+
+| Status | Action |
+|--------|--------|
+| File exists AND has pending tasks | **SKIP directly to Step 3** - do NOT execute Step 1 or Step 2 |
+| File exists BUT all tasks completed | Delete the file, then continue to Step 1 |
+| File does not exist | Continue to Step 1 |
 
 ### Step 1: Get All Markdown File Paths
 
-**Use the shell script `scripts/scan-md-files.sh` to scan the target directory.**
+**IMPORTANT: Only execute this step if Step 0 determined there are NO pending tasks.
+If pending tasks exist, you should have skipped directly to Step 3.**
 
+**REQUIRED: You MUST use the shell script `scripts/scan-md-files.sh` to scan the directory.**
+Do NOT manually scan directories or use other methods.
+
+The script is located at `<skill-directory>/scripts/scan-md-files.sh`.
 Execute the following command:
 ```bash
 ./scripts/scan-md-files.sh <target_directory>
@@ -40,6 +52,9 @@ The script will:
 
 ### Step 2: Create Todo Tasks File
 
+**IMPORTANT: Only execute this step after completing Step 1.
+If you skipped Step 1 (because pending tasks exist), skip this step too.**
+
 Create `knowledge-index-todotasks.md` in the target directory following the template in `references/todotasks-template.md`. This file tracks processing progress and enables resume from breakpoint.
 
 **Structure:**
@@ -48,10 +63,26 @@ Create `knowledge-index-todotasks.md` in the target directory following the temp
 
 See `references/todotasks-template.md` for the full template.
 
-### Step 3: Process Each File in Loop
+### Step 3: Process Each Task in Loop
+
+**IMPORTANT: Your goal is to complete tasks, not just process files.**
+
+The `knowledge-index-todotasks.md` file is your task queue. You MUST:
+1. Read the task queue at the start of this step
+2. Complete ONE task at a time (extract subject from the task's source file)
+3. After completing each task, IMMEDIATELY update BOTH:
+   - `知识目录.md` - add/update the subject entry
+   - `knowledge-index-todotasks.md` - mark the task as completed (move to Completed section)
+4. Re-read the task queue and continue with the next task
+
+**DO NOT** process all files in one go. **DO NOT** skip updating the task queue.
+The task queue MUST be updated after completing EACH task, enabling resume from breakpoint.
+
+**Entry point:**
+- If you came from Step 0 (pending tasks exist): Read existing `knowledge-index-todotasks.md` and start from the first pending task
+- If you came from Step 2 (new run): The todo file was just created in Step 2
 
 **CRITICAL: Tasks MUST be processed sequentially (one at a time), NOT in parallel.**
-
 **You MUST complete one task fully (including writing back to both files) before starting the next task.**
 
 1. Read `knowledge-index-todotasks.md` file from the target directory
