@@ -6,7 +6,6 @@ Dependency sources:
   1. Markdown link references between files
   2. Conceptual dependencies inferred by LLM content analysis
 Constraints:
-  - Maximum 4 dependency levels (merge subjects if exceeded while preserving semantics)
   - Subjects must be concrete entities documented in source files, not abstract concepts
 Format: graph TD for top-down directed graph, --> shows dependency direction
 -->

@@ -40,7 +40,7 @@ The script will:
 
 ### Step 2: Create Todo Tasks File
 
-Create `knowledge-index-todotasks.md` in the target directory following the template in `references/todotasks-template.md`.
+Create `knowledge-index-todotasks.md` in the target directory following the template in `references/todotasks-template.md`. This file tracks processing progress and enables resume from breakpoint.
 
 **Structure:**
 - `## Pending` - Files waiting to be processed (marked with "- [ ]")
@@ -61,8 +61,12 @@ See `references/todotasks-template.md` for the full template.
    - Read the Markdown file content
    - Identify **ONE main subject only** from the file:
      - What concrete module/component/other does this file describe?
-     - Must be the word phase from the source file
-     - **Extract only ONE subject per file - do NOT extract multiple subjects from the same file**
+     - **Subject name must exist in the source file** - Do NOT generate or create new subject names; extract the exact word phase from the original document.
+     - **Extract only ONE subject per file** - This ensures each subject in the knowledge index has complete context and avoids knowledge fragmentation. Multiple subjects from one file would create shallow, disconnected entries.
+     - **When unclear, ask the user**:
+       - If the file content is ambiguous and you cannot determine the main subject
+       - If the file appears to describe multiple subjects and you need help selecting the primary one
+       - If dependency relationships are unclear
    - Generate introduction:
      - 50-150 Chinese characters
      - Describe purpose and problems solved
@@ -72,13 +76,16 @@ See `references/todotasks-template.md` for the full template.
    - Identify dependencies:
      - Extract from Markdown links: `[xxx](other-file.md)`
      - Infer from content analysis
-   - Read existing `知识目录.md` (if exists)
+   - Read existing `知识目录.md` (if exists) for incremental update:
+     - Add new subject OR update existing entry
+     - Remove entries for deleted source files if detected
    - Update subject list section:
      - Add new subject OR update existing entry
      - Include source path: `- 来源：`<relative-path>``
    - Update dependency graph section:
      - Add new dependency relationships
-   - Write back to `知识目录.md` immediately
+     - Ensure ALL subjects in the 主体列表 appear in the dependency graph
+   - Write back to `知识目录.md` immediately - both subject list AND dependency graph must be updated together after processing each file
    - Mark this task as completed:
      - Move this task from Pending to Completed section
      - Change "- [ ]" to "- [x]"
@@ -86,33 +93,24 @@ See `references/todotasks-template.md` for the full template.
 4. **After completing one task**, re-read `knowledge-index-todotasks.md` and repeat step 3 for the next pending task
 5. **Continue this loop** until all pending tasks are completed
 
-**DO NOT batch process multiple tasks. DO NOT read multiple file contents before writing back. One task at a time.**
-
-### Step 4: Final Validation
-
-After all files are processed:
-
-1. Verify dependency chains do not exceed 4 levels
-2. Merge subjects if needed to comply with the 4-level constraint (while preserving semantics)
 
 ### Building the Dependency Graph
 
 1. Extract explicit dependencies from Markdown links: `[xxx](other-file.md)`
 2. Infer conceptual dependencies from content analysis
-3. Build a directed graph with maximum 4 levels
-4. If chains exceed 4 levels, merge related subjects while preserving semantics
+3. Build a directed graph
 
 ### Output Format
 
 The "知识目录.md" must follow the template structure in `references/knowledge-index-template.md`, with the following differences for the final output:
 
 **Final Output Rules:**
-1. **Remove all HTML comments** - The output file should NOT contain any `<!-- ... -->` comments
-2. **Remove example entries** - Do not include the example subjects (认证模块，用户管理) from the template
-3. **Global dependency graph must include ALL subjects** - Every subject in the 主体列表 section must appear in the dependency graph (either as a source or target of a dependency, or as a standalone node if it has no dependencies)
+1. **Remove example entries** - Do not include the example subjects (认证模块，用户管理) from the template
+2. **Remove HTML comments** - The final output must NOT contain any HTML comments (`<!-- ... -->`). Template comments are for guidance only.
+3. **Include all subjects in dependency graph** - Every subject in the 主体列表 section must appear in the 全局依赖图 Mermaid graph.
 
 **Template structure (for reference only):**
-- `## 全局依赖图` - Mermaid graph showing dependencies between subjects (must include all subjects)
+- `## 全局依赖图` - Mermaid graph showing dependencies between subjects
 - `## 主体列表` - List of subjects with 50-150 character introductions
 
 See `references/knowledge-index-template.md` for the full template with comments and examples (for reference only, do not copy them to output).
@@ -122,8 +120,8 @@ See `references/knowledge-index-template.md` for the full template with comments
 When processing files, you may need to ask the user:
 
 - "这个文件描述的主体是什么？"（如果无法从内容中确定）
+- "这个文件是否包含多个候选主体，应该选择哪一个？"（当文件似乎描述多个主体时）
 - "这个主体依赖于哪些其他主体？"（如果依赖关系不明确）
-- "知识目录.md 已存在，是否要增量更新？"
 
 ## Rules
 
@@ -132,20 +130,6 @@ When processing files, you may need to ask the user:
 1. **Language for comments and instructions**: Use English for template comments and skill instructions
 2. **Language for examples**: Use Chinese for template examples and user questions
 3. **No instructions in comments**: Template comments should only describe content meaning and format, never include operational instructions
-
-### Constraints
-
-1. **Subject requirement**: Subjects must be concrete physical entities documented in source files, not abstract concepts
-2. **Subject name requirement**: Subject names MUST exist in the original source documents - do NOT generate or create new subject names
-3. **Subject abstraction level**: All subjects in the final output must be at the same abstraction level. If subjects are at different levels, merge lower-level subjects into higher-level ones
-4. **One subject per file**: Each file should contribute exactly ONE subject only - do NOT extract multiple subjects from the same file
-5. **Dependency depth**: Maximum 4 dependency levels in the mermaid graph
-6. **Introduction length**: 50-150 Chinese characters for each subject introduction
-7. **Incremental update**: Add new subjects, update existing ones, remove entries for deleted files
-8. **Dynamic updates**: Both subject list AND dependency graph are updated immediately after processing each file
-9. **Final output must NOT contain HTML comments**: Remove all `<!-- ... -->` comments from the output file
-10. **Global dependency graph must include ALL subjects**: Every subject in the 主体列表 section must appear in the dependency graph
-11. **Todo tasks file**: Must create and maintain `knowledge-index-todotasks.md` for tracking progress
 
 ## Files to Create
 
