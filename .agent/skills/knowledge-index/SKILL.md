@@ -60,18 +60,22 @@ See `references/todotasks-template.md` for the full template.
    - Extract the file path from the first pending task line
    - Read the Markdown file content
    - Identify **ONE main subject only** from the file:
-     - What concrete module/component does this file describe?
-     - Must be a physical entity, not an abstract concept
+     - What concrete module/component/other does this file describe?
+     - Must be the word phase from the source file
      - **Extract only ONE subject per file - do NOT extract multiple subjects from the same file**
    - Generate introduction:
      - 50-150 Chinese characters
      - Describe purpose and problems solved
+   - **Extract source path:**
+     - Get the relative path from the target directory to the source file
+     - Format as relative path (e.g., `modules/auth/README.md`)
    - Identify dependencies:
      - Extract from Markdown links: `[xxx](other-file.md)`
      - Infer from content analysis
    - Read existing `知识目录.md` (if exists)
    - Update subject list section:
      - Add new subject OR update existing entry
+     - Include source path: `- 来源：`<relative-path>``
    - Update dependency graph section:
      - Add new dependency relationships
    - Write back to `知识目录.md` immediately
