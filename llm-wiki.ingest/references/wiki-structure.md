@@ -6,36 +6,31 @@
 
 每个 wiki 页面必须在顶部包含 YAML front matter，字段说明如下：
 
+| 字段        | 类型   | 必填 | 说明                                                                 |
+| ----------- | ------ | ---- | -------------------------------------------------------------------- |
+| `title`     | string | 是   | 页面标题，用于显示和索引                                             |
+| `type`      | string | 是   | 页面类型：`overview`、`entity`、`procedure`、`concept`、`synthesis`、`source` |
+| `created`   | string | 是   | 页面创建日期，格式 `YYYY-MM-DD`                                      |
+| `updated`   | string | 是   | 最后更新日期，格式 `YYYY-MM-DD`，初始创建时与 `created` 相同         |
+| `relations` | array  | 是   | 关联关系数组，表示与本页面有关联的其他页面，每个元素包含 `path`（相对路径）和 `desc`（关系描述，≤50字）；如果不存在关联关系，值为 `[]` |
 
-| 字段              | 类型     | 必填  | 说明                                                             |
-| --------------- | ------ | --- | -------------------------------------------------------------- |
-| `title`         | string | 是   | 页面标题，用于显示和索引                                                   |
-| `type`          | string | 是   | 页面类型：`overview`                                                |
-| `created`       | string | 是   | 页面创建日期，格式 `YYYY-MM-DD`                                         |
-| `updated`       | string | 是   | 最后更新日期，格式 `YYYY-MM-DD`，初始创建时与 `created` 相同                     |
-| `references`    | array  | 是   | 引用关系数组，表示"我引用了谁"，每个元素包含 `page`（相对路径）和 `description`（关系描述，≤50字）；如果不存在该关系，值为[] |
-| `referenced_by` | array  | 是   | 引用关系数组，表示"我被谁引用了"，每个元素包含 `page`（相对路径）和 `description`（关系描述，≤50字）；**创建时必须根据 Ingest 规划填写完整**        |
-
-
-### references 格式示例
+### relations 格式示例
 
 ```yaml
-references:
-  - page: "../entities/user.md"
-    description: "本文描述了用户实体的认证流程"
-  - page: "../concepts/authentication.md"
-    description: "本文使用了认证模式"
-referenced_by:
-  - page: "../overview/auth.md"
-    description: "概览页面引用了本文作为核心概念"
-  - page: "../synthesis/security-analysis.md"
-    description: "综合分析引用了本文的安全最佳实践"
+relations:
+  - path: "../entities/user.md"
+    desc: "本文描述了用户实体的认证流程"
+  - path: "../concepts/authentication.md"
+    desc: "本文使用了认证模式进行安全验证"
+  - path: "../overview/auth.md"
+    desc: "概览页面引用了本文作为核心概念"
 ```
 
 **重要规则**：
-- `references` 和 `referenced_by` 是双向关系的两面
-- **创建页面时必须根据 Ingest 规划填写完整的 referenced_by**，禁止"创建时留空后续填充"
-- 如果引用关系发生变化，必须同时更新 references 和 referenced_by
+- `relations` 字段记录与本页面有关联的所有其他 wiki 页面
+- 关联类型包括：直接引用、被引用、内容相关
+- **创建页面时必须根据 Ingest 规划填写完整的 relations**，禁止"创建时留空后续填充"
+- 如果关联关系发生变化，必须同时更新双方页面的 relations
 
 ## 页面类型定义
 
@@ -61,15 +56,11 @@ title: "领域名称 概览"
 type: overview
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
-references:
-  - page: "../concepts/xxx.md"
-    description: "关系描述（≤50字）"
-  - page: "../entities/yyy.md"
-    description: "关系描述（≤50字）"
-referenced_by:
-  # 根据 Ingest 规划填写，列出哪些页面引用了本文
-  - page: "../synthesis/zzz.md"
-    description: "综合分析引用了本文的概览信息"
+relations:
+  - path: "../concepts/xxx.md"
+    desc: "概览包含此核心概念（≤50字）"
+  - path: "../entities/yyy.md"
+    desc: "概览涉及此核心实体（≤50字）"
 ---
 
 # Overview: 领域名称 概览
@@ -123,18 +114,13 @@ title: "实体名称"
 type: entity
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
-references:
-  # 可选：如果有关联的实体，在此声明
-  # - page: "../entities/yyy.md"
-  #   description: "该实体与 yyy 实体协作"
-  # 可选：如果有关联的 concept，在此声明（不是必须的）
-  # - page: "../concepts/xxx.md"
-  #   description: "该实体使用 xxx 模式"
-referenced_by:
-  # 根据 Ingest 规划填写，列出哪些页面引用了本文
-  # 例如：哪些概念页面或概览页面使用了该实体
-  - page: "../concepts/xxx.md"
-    description: "该概念引用了本文作为核心参与者"
+relations:
+  # 如果有关联的实体或概念，在此声明
+  - path: "../entities/yyy.md"
+    desc: "该实体与 yyy 实体协作"
+  - path: "../concepts/xxx.md"
+    desc: "该实体使用 xxx 模式"
+  # 根据 Ingest 规划填写，列出与本页面有关联的所有页面
 ---
 
 # Entity: 实体名称
@@ -185,15 +171,13 @@ title: "流程名称"
 type: procedure
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
-references:
-  - page: "../entities/xxx.md"
-    description: "关系描述（≤50字）"
-  - page: "../concepts/yyy.md"
-    description: "关系描述（≤50字）"
-referenced_by:
-  # 根据 Ingest 规划填写，列出哪些页面引用了本文
-  - page: "../overview/zzz.md"
-    description: "概览页面引用了本文作为相关流程"
+relations:
+  - path: "../entities/xxx.md"
+    desc: "流程操作此实体（≤50字）"
+  - path: "../concepts/yyy.md"
+    desc: "流程使用此概念模式（≤50字）"
+  - path: "../overview/zzz.md"
+    desc: "概览页面引用了本文作为相关流程"
 ---
 
 # Procedure: 流程名称
@@ -256,18 +240,12 @@ title: "概念名称"  # 一个页面只描述一个概念
 type: concept
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
-references:
-  # 可选：如果有关联的实体，在此声明
-  # - page: "../entities/xxx.md"
-  #   description: "该概念被 xxx 实体使用"
-  # 可选：如果有关联的其他概念，在此声明
-  # - page: "../concepts/yyy.md"
-  #   description: "该概念依赖于 yyy"
-referenced_by:
-  # 根据 Ingest 规划填写，列出哪些页面引用了本文
-  # 例如：哪些概览页面或综合分析引用了该概念
-  - page: "../overview/auth.md"
-    description: "概览页面包含本文作为核心概念"
+relations:
+  # 如果有关联的实体或其他概念，在此声明
+  - path: "../entities/xxx.md"
+    desc: "该概念被 xxx 实体使用"
+  - path: "../overview/auth.md"
+    desc: "概览页面包含本文作为核心概念"
 ---
 
 # Concept: 概念名称
@@ -318,16 +296,13 @@ title: "分析标题"
 type: synthesis
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
-references:
-  - page: "../concepts/xxx.md"
-    description: "关系描述（≤50字）"
-  - page: "../sources/yyy.md"
-    description: "关系描述（≤50字）"
-referenced_by:
-  # 根据 Ingest 规划填写，列出哪些页面引用了本文
-  # 通常综合分析会被 overview 或其他 synthesis 引用
-  - page: "../overview/zzz.md"
-    description: "概览页面引用了本文的分析结论"
+relations:
+  - path: "../concepts/xxx.md"
+    desc: "分析涉及此概念（≤50字）"
+  - path: "../sources/yyy.md"
+    desc: "分析引用此源文件摘要（≤50字）"
+  - path: "../overview/zzz.md"
+    desc: "概览页面引用了本文的分析结论"
 ---
 
 # Synthesis: 分析标题
@@ -374,13 +349,12 @@ type: source
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 original_path: "path/to/original/file"
-references: []  # Source 通常不主动引用其他页面
-referenced_by:
+relations:
   # 根据 Ingest 规划填写，列出哪些页面引用了此源文件
-  - page: "../overview/auth.md"
-    description: "概览页面引用了本文作为信息来源"
-  - page: "../concepts/xxx.md"
-    description: "概念页面引用了本文的内容"
+  - path: "../overview/auth.md"
+    desc: "概览页面引用了本文作为信息来源"
+  - path: "../concepts/xxx.md"
+    desc: "概念页面引用了本文的内容"
 ---
 
 # Source: 文件名
@@ -410,14 +384,14 @@ referenced_by:
 - 示例：`jwt-authentication.md`、`payment-service.md`、`agent-decision-loop.md`
 
 
-| 类型        | 命名规则   | 推荐                                | 不推荐                          |
-| --------- | ------ | --------------------------------- | ---------------------------- |
-| overview  | 领域名称   | `authentication.md`               | `authentication-overview.md` |
-| entity    | 名词     | `user.md`, `payment-service.md`   | `user-entity.md`             |
-| procedure | 流程名称   | `deploy.md`, `release.md`         | `deploy-procedure.md`        |
-| concept   | 抽象名词短语 | `authentication.md`, `caching.md` | `authentication-concept.md`  |
-| synthesis | 描述性标题  | `architecture-comparison.md`      | `architecture-synthesis.md`  |
-| source    | 原文件名转换 | `architecture.md`                 | `architecture-source.md`     |
+| 类型       | 命名规则     | 推荐                                | 不推荐                          |
+| ---------- | ------------ | ----------------------------------- | ------------------------------- |
+| overview   | 领域名称     | `authentication.md`                 | `authentication-overview.md`   |
+| entity     | 名词         | `user.md`, `payment-service.md`     | `user-entity.md`               |
+| procedure  | 流程名称     | `deploy.md`, `release.md`           | `deploy-procedure.md`          |
+| concept    | 抽象名词短语 | `authentication.md`, `caching.md`   | `authentication-concept.md`    |
+| synthesis  | 描述性标题   | `architecture-comparison.md`        | `architecture-synthesis.md`    |
+| source     | 原文件名转换 | `architecture.md`                   | `architecture-source.md`       |
 
 
 ### 来源引用

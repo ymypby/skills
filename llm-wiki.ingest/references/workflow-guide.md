@@ -45,8 +45,8 @@
                     ▼
 ┌─────────────────────────────────────────┐
 │ 阶段 3: 执行 (Execution)                 │
-│ - 创建/更新页面（含完整双向关系）          │
-│ - 修复现有页面的 referenced_by           │
+│ - 创建/更新页面（含完整 relations）       │
+│ - 修复现有页面的 relations               │
 │ - 更新 index.md                         │
 │ - 追加 log.md                           │
 └─────────────────────────────────────────┘
@@ -130,18 +130,17 @@ LLM **必须**向用户展示规划表，分为四个部分：
 
 ### 页面关系图
 
-| 来源页面 | → | 目标页面 | 关系类型 |
+| 页面 A | ↔ | 页面 B | 关系描述 |
 |----------|---|----------|----------|
-| concepts/xxx.md | → | entities/yyy.md | references |
-| entities/yyy.md | → | concepts/xxx.md | referenced_by |
-| overview/auth.md | → | concepts/xxx.md | references |
-| concepts/xxx.md | → | overview/auth.md | referenced_by |
+| concepts/xxx.md | ↔ | entities/yyy.md | xxx 概念描述了 yyy 实体的核心机制 |
+| overview/auth.md | ↔ | concepts/xxx.md | 概览页面包含 xxx 作为核心概念 |
+| sources/architecture.md | ↔ | overview/auth.md | 源文件摘要作为概览的信息来源 |
 
-### 需要修复的现有页面 referenced_by
+### 需要修复的现有页面 relations
 
-| 页面路径 | 当前 referenced_by | 应更新为 |
-|----------|-------------------|----------|
-| entities/zzz.md | [] | [concepts/xxx.md] |
+| 页面路径 | 当前 relations | 应新增关联 |
+|----------|---------------|----------|
+| entities/zzz.md | [overview/auth.md] | [overview/auth.md, concepts/xxx.md] |
 
 ---
 
@@ -181,28 +180,28 @@ LLM **必须**向用户展示规划表，分为四个部分：
 
 对于用户确认需要创建或更新的页面：
 1. 按照 [wiki-structure.md](wiki-structure.md) 的模板格式
-2. **创建页面时，front matter 中必须同时填写完整的 references 和 referenced_by**
-3. **更新页面时，必须同时更新 references 和 referenced_by**
+2. **创建页面时，front matter 中必须填写完整的 relations**
+3. **更新页面时，必须同步更新 relations**
 4. 文件大小建议详见 [wiki-structure.md](wiki-structure.md) - 文件大小控制
 
-**步骤 3.2: 修复现有页面的 referenced_by**
+**步骤 3.2: 修复现有页面的 relations**
 
-对于受本次 Ingest 影响的现有页面（其 referenced_by 需要更新）：
+对于受本次 Ingest 影响的现有页面（其 relations 需要更新）：
 1. 读取该页面内容
-2. 更新 front matter 中的 referenced_by 字段
-3. 确保与新创建/更新页面的 references 保持一致
+2. 更新 front matter 中的 relations 字段
+3. 确保与新创建/更新页面的 relations 保持一致
 
 ```
 对于本次 Ingest 创建或更新的每个页面 P：
-  // 新页面 P 的 referenced_by 已在步骤 3.1 中填写完整
+  // 新页面 P 的 relations 已在步骤 3.1 中填写完整
   
-  // 对于受影响的现有页面 X（X 的 referenced_by 需要更新）：
-  如果 P.references 指向已有页面 X：
-    将 P.path 添加到 X.referenced_by（如不存在）
+  // 对于受影响的现有页面 X（X 的 relations 需要更新）：
+  如果 P.relations 指向已有页面 X：
+    将 P.path 添加到 X.relations（如不存在）
   
-  // 对于新引用 P 的页面 N（N 在本次 Ingest 中被更新）：
-  如果页面 N 的 references 指向 P（N 在本次 Ingest 中被更新）：
-    确保 N.path 已在 P.referenced_by 中
+  // 对于新关联 P 的页面 N（N 在本次 Ingest 中被更新）：
+  如果页面 N 的 relations 指向 P（N 在本次 Ingest 中被更新）：
+    确保 N.path 已在 P.relations 中
 ```
 
 **步骤 3.3: 更新 index.md**
@@ -228,11 +227,11 @@ LLM **必须**向用户展示规划表，分为四个部分：
 
 ### 更新的页面
 - overview/auth.md (补充 xxx)
-- entities/zzz.md (修复 referenced_by)
+- entities/zzz.md (修复 relations)
 
 ### 关系维护
-- 新页面 references/referenced_by 已填写完整
-- 现有页面 referenced_by 已修复
+- 新页面 relations 已填写完整
+- 现有页面 relations 已修复
 
 ### 索引和日志
 - index.md 已更新
@@ -273,14 +272,12 @@ LLM 执行：
    
    ### 页面关系图
    
-   | 来源页面 | → | 目标页面 | 关系类型 |
+   | 页面 A | ↔ | 页面 B | 关系描述 |
    |----------|---|----------|----------|
-   | overview/authentication.md | → | concepts/agent-decision-loop.md | references |
-   | concepts/agent-decision-loop.md | → | overview/authentication.md | referenced_by |
-   | overview/authentication.md | → | sources/architecture.md | references |
-   | sources/architecture.md | → | overview/authentication.md | referenced_by |
+   | overview/authentication.md | ↔ | concepts/agent-decision-loop.md | 概览包含 Agent 决策循环作为核心概念 |
+   | overview/authentication.md | ↔ | sources/architecture.md | 概览引用源文件摘要作为信息来源 |
    
-   ### 需要修复的现有页面 referenced_by
+   ### 需要修复的现有页面 relations
    
    (无)
    
@@ -288,7 +285,7 @@ LLM 执行：
    请审查以上规划。
 
 6. 等待用户确认（如用户回复：全部创建，无问题）
-7. 【阶段 3：执行】创建/更新页面，同时填写完整双向关系
+7. 【阶段 3：执行】创建/更新页面，同时填写完整 relations
 8. 更新 index.md 和 log.md
 9. 向用户展示执行结果
 ```
@@ -323,24 +320,21 @@ LLM 执行：
    
    ### 页面关系图
    
-   | 来源页面 | → | 目标页面 | 关系类型 |
+   | 页面 A | ↔ | 页面 B | 关系描述 |
    |----------|---|----------|----------|
-   | entities/session.md | → | concepts/jwt-authentication.md | references |
-   | concepts/jwt-authentication.md | → | entities/session.md | referenced_by |
-   | concepts/jwt-authentication.md | → | concepts/jwt-authentication.md | references (自更新) |
-   | concepts/jwt-authentication.md | → | entities/session.md | referenced_by (新页面引用) |
+   | entities/session.md | ↔ | concepts/jwt-authentication.md | 会话实体是 JWT 认证的核心参与者 |
    
-   ### 需要修复的现有页面 referenced_by
+   ### 需要修复的现有页面 relations
    
-   | 页面路径 | 当前 referenced_by | 应更新为 |
-   |----------|-------------------|----------|
+   | 页面路径 | 当前 relations | 应新增关联 |
+   |----------|---------------|----------|
    | concepts/jwt-authentication.md | [overview/auth.md] | [overview/auth.md, entities/session.md] |
    
    ---
    请审查以上规划。
 
 6. 等待用户确认
-7. 【阶段 3：执行】创建/更新页面，修复 referenced_by
+7. 【阶段 3：执行】创建/更新页面，修复 relations
 8. 更新 index.md 和 log.md
 9. 向用户展示执行结果
 ```
@@ -356,7 +350,7 @@ LLM 执行：
 
 - 来源: 文件/代码 - path/to/file (行数/页数)
 - 创建: wiki/xxx.md
-- 更新: wiki/yyy.md, referenced_by, index.md
+- 更新: wiki/yyy.md, relations, index.md
 ```
 
 ## 询问用户模板
@@ -386,5 +380,5 @@ LLM 执行：
 
 - **三阶段流程必须严格执行** - 规划→确认→执行，不得跳过任何阶段
 - **迭代循环** - 用户有异议时必须回到规划阶段，不得直接执行
-- **referenced_by 创建时必须填写** - 禁止"创建时留空后续填充"的模式
+- **relations 创建时必须填写** - 禁止"创建时留空后续填充"的模式
 - **index.md 保持一致** - 每次页面变更后同步更新索引

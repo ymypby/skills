@@ -1,6 +1,6 @@
 ---
 name: llm-wiki.lint
-description: 维护 LLM Wiki 知识库健康，双向验证和同步 references 与 referenced_by 关系，检测孤立页面，检查矛盾内容，验证关系正确性。当用户要求检查 wiki 健康、更新关系、或大型 Ingest 后建议使用此技能。
+description: 维护 LLM Wiki 知识库健康，验证页面间 relations 关系正确性，检测孤立页面，检查矛盾内容。当用户要求检查 wiki 健康、更新关系、或大型 Ingest 后建议使用此技能。
 ---
 
 # LLM Wiki Lint Skill
@@ -9,7 +9,7 @@ description: 维护 LLM Wiki 知识库健康，双向验证和同步 references 
 
 ## 核心理念
 
-- **双向关系验证**：确保 references 与 referenced_by 互相匹配且描述一致
+- **关系统一管理**：使用 `relations` 字段记录页面间关联关系，包括直接引用、被引用和内容相关等所有关联类型
 - **关系正确性验证**：通过阅读原文理解语义，验证声明的关系是否真实存在
 - **循环修复机制**：阶段二用户反馈有问题或阶段三修复完成后，自动回到阶段一重新检查，持续迭代直到用户确认通过
 - **知识完整性**：检测孤立页面和缺失的交叉引用
@@ -19,7 +19,7 @@ description: 维护 LLM Wiki 知识库健康，双向验证和同步 references 
 
 ### 阶段一：检查问题（只读模式）
 - 扫描指定范围内的所有 wiki 页面
-- 执行双向验证（references ↔ referenced_by）
+- 执行路径有效性验证
 - 执行关系正确性验证（语义验证）
 - 检测孤立页面和矛盾内容
 - 生成详细 Lint 报告
@@ -64,18 +64,27 @@ wiki/
 ## 关键规则 - 必须遵守
 
 1. **Lint 必须扫描指定范围内的所有页面**：用户指定单个页面、多个页面或目录时，不得跳过任何页面
-2. **双向验证关系**：references 和 referenced_by 的验证同等重要，必须互相校验
+2. **路径有效性必须验证**：relations 中的每个 path 必须指向存在的文件
 3. **严格三阶段循环**：检查、确认、修复按顺序执行，禁止跳过确认环节
 4. **矛盾内容必须报告**：不得自动修改，必须展示给用户判断
 5. **孤立页面必须标注**：建议建立链接，但不自动修改
 6. **关系正确性必须验证**：通过阅读原文理解语义，验证声明的关系是否真实存在
 7. **循环直到用户确认通过**：阶段二用户反馈有问题或阶段三修复完成后，自动回到阶段一重新检查
+8. **执行前必须读取参考文件**：在开始任何 Lint 操作前，必须先读取 `references/workflow-guide.md` 和 `references/wiki-structure.md`，了解完整的流程细节和格式规范
+
+## 前置准备（必须执行）
+
+在开始 Lint 流程前，必须依次读取以下参考文件：
+1. **workflow-guide.md**：了解三阶段循环的完整流程、各阶段详细步骤、报告模板
+2. **wiki-structure.md**：了解 Front Matter 格式、relations 字段定义、验证逻辑
+
+这两个文件包含执行本技能所需的关键细节，跳过读取将导致流程执行不完整。
 
 ## Lint 工作流程
 
 详见 [workflow-guide.md](references/workflow-guide.md)，包含：
 - 三阶段完整流程
-- 阶段一：双向验证、语义验证步骤（只读）
+- 阶段一：路径验证、语义验证步骤（只读）
 - 阶段二：报告模板和确认流程
 - 阶段三：修复执行步骤（写入）
 - 循环机制说明
@@ -84,5 +93,5 @@ wiki/
 
 详见 [wiki-structure.md](references/wiki-structure.md)，包含：
 - Front Matter 元数据格式
-- references/referenced_by 维护规则
+- `relations` 字段维护规则
 - 关系描述最佳实践
